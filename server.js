@@ -11,6 +11,7 @@ var app = express();
 var mongodb = require('mongodb');
 var MongoClient = mongodb.MongoClient;
 var url = process.env.MONGOLAB_URI;
+var validUrl = require('valid-url');
 
 if (!process.env.DISABLE_XORIGIN) {
   app.use(function(req, res, next) {
@@ -41,20 +42,27 @@ app.route('/')
 		  res.sendFile(process.cwd() + '/views/index.html');
     })
 
-app.route('/new/:url')
-    .get(function(req, res) {
-		  MongoClient.connect(url, function (err, db) {
+app.route('/new')
+    .get('/:url', function(req, res) {
+  
+     if (validUrl.isUri(req.params.url)){        
+       
+       	MongoClient.connect(url, function (err, db) {
           if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:', err);
+            res.send('Unable to connect to the mongoDB server. Error:')
           } else {
-            console.log('Connection established to', url);
 
-            // do some work here with the database.
-
+            res.send('looks good to me')
+            
             //Close connection
             db.close();
           }
-        });
+        })
+       
+      } else {
+        res.send('you call that a valid url?')
+      }
+
     })
 
 

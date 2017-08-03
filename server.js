@@ -42,8 +42,8 @@ app.route('/')
 		  res.sendFile(process.cwd() + '/views/index.html');
     })
 
-app.route('/new')
-    .get('/:url', function(req, res) {
+app.route('/new/:url*')
+    .get(function(req, res) {
   
      if (validUrl.isUri(req.params.url)){        
        

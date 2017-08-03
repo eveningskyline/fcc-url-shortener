@@ -12,6 +12,7 @@ var mongodb = require('mongodb');
 var MongoClient = mongodb.MongoClient;
 var url = process.env.MONGOLAB_URI;
 var validUrl = require('valid-url');
+var urlEncoder = require('./url-encoder');
 
 if (!process.env.DISABLE_XORIGIN) {
   app.use(function(req, res, next) {
@@ -45,13 +46,13 @@ app.route('/')
 app.route('/new/:url*')
     .get(function(req, res) {
   
-     if (validUrl.isUri(req.params.url)){        
+     if (validUrl.isUri(req.params.url)){ 
        
        	MongoClient.connect(url, function (err, db) {
           if (err) {
             res.send('Unable to connect to the mongoDB server. Error:')
           } else {
-
+            
             res.send('looks good to me')
             
             //Close connection
@@ -84,4 +85,3 @@ app.use(function(err, req, res, next) {
 app.listen(process.env.PORT, function () {
   console.log('Node.js listening ...');
 });
-

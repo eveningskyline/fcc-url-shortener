@@ -44,13 +44,11 @@ app.route('/')
 		  res.sendFile(process.cwd() + '/views/index.html');
     })
 
-app.route('/new')
+app.route('/new/*')
     .get(function(req, res) {
   
-  res.send(req.params.url);
-  
-    var longUrl = req.params.url
-    var shortUrl = undefined
+    var longUrl = req.params[0]
+    var shortUrl = ''
   
      if (validUrl.isUri(longUrl)){ 
        
@@ -60,7 +58,7 @@ app.route('/new')
         Url.findOne({long_url: longUrl}, function (err, doc){
           if (doc){
             // base58 encode the unique _id of that document and construct the short URL
-            shortUrl = process.env.MONGODB_WEBHOST + base58.encode(doc._id);
+            shortUrl = 'https://fluttering-acoustic.glitch.me/' + base58.encode(doc._id);
 
             // since the document exists, we return it without creating a new entry
             res.send({'shortUrl': shortUrl});
@@ -78,7 +76,7 @@ app.route('/new')
               }
 
               // construct the short URL
-              shortUrl = process.env.MONGODB_WEBHOST + base58.encode(newUrl._id);
+              shortUrl = 'https://fluttering-acoustic.glitch.me/' + base58.encode(newUrl._id);
 
               res.send({'shortUrl': shortUrl});
             });
@@ -93,6 +91,23 @@ app.route('/new')
       }
 
     })
+
+app.get('/:encoded_id', function(req, res){
+  var base58Id = req.params.encoded_id;
+  var id = base58.decode(base58Id);
+
+  // check if url already exists in database
+  Url.findOne({_id: id}, function (err, doc){
+    if (doc) {
+      // found an entry in the DB, redirect the user to their destination
+      res.redirect(doc.long_url);
+    } else {
+      // nothing found, take 'em home
+      res.redirect('https://fluttering-acoustic.glitch.me/');
+    }
+  });
+
+});
 
 
 // Respond not found to all the wrong routes

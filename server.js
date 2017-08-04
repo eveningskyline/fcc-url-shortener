@@ -8,29 +8,12 @@
 var fs = require('fs');
 var express = require('express');
 var app = express();
-var mongodb = require('mongodb');
-var MongoClient = mongodb.MongoClient;
 var url = process.env.MONGOLAB_URI;
 var validUrl = require('valid-url');
-var urlEncoder = require('./url-encoder');
 var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-
-// create the counters schema with an _id field and a seq field
-var CounterSchema = Schema({
-    _id: {type: String, required: true},
-    seq: { type: Number, default: 0 }
-});
-
-// create a model from that schema
-var counter = mongoose.model('counter', CounterSchema);
-
-// create a schema for our links
-var urlSchema = new Schema({
-  _id: {type: Number, index: true},
-  long_url: String,
-  created_at: Date
-});
+var base58 = require('./base58');
+// grab the url model
+var Url = require('./models/url');
 
 if (!process.env.DISABLE_XORIGIN) {
   app.use(function(req, res, next) {
@@ -64,12 +47,27 @@ app.route('/')
 app.route('/new/:url*')
     .get(function(req, res) {
   
-     if (validUrl.isUri(req.params.url)){ 
+    var longUrl = req.params.url
+    var shortUrl = undefined
+  
+     if (validUrl.isUri(longUrl)){ 
        
-       	MongoClient.connect(url, function (err, db) {
+       	//MongoClient.connect(url, function (err, db) {
+       mongoose.connect(url, function (err, db) {
           if (err) {
             res.send('Unable to connect to the mongoDB server. Error:')
           } else {
+            
+            
+            Url.findOne({long_url: longUrl}, function (err, doc){
+              if (doc){
+                // URL has already been shortened
+              } else {
+                // The long URL was not found in the long_url field in our urls
+                // collection, so we need to create a new entry
+              }
+            });
+
             
             res.send('looks good to me')
             

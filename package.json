@@ -3,7 +3,8 @@
   "dependencies": {
     "express": "^4.14.0",
     "mongodb": "^2.2.30",
-    "valid-url": "^1.0.9"
+    "valid-url": "^1.0.9",
+    "mongoose": "^4.11.5"
   },
   "main": "server.js",
   "scripts": {

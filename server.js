@@ -44,37 +44,49 @@ app.route('/')
 		  res.sendFile(process.cwd() + '/views/index.html');
     })
 
-app.route('/new/:url*')
+app.route('/new')
     .get(function(req, res) {
+  
+  res.send(req.params.url);
   
     var longUrl = req.params.url
     var shortUrl = undefined
   
      if (validUrl.isUri(longUrl)){ 
        
-       	//MongoClient.connect(url, function (err, db) {
-       mongoose.connect(url, function (err, db) {
-          if (err) {
-            res.send('Unable to connect to the mongoDB server. Error:')
+        mongoose.connect(url);
+       
+        // check if url already exists in database
+        Url.findOne({long_url: longUrl}, function (err, doc){
+          if (doc){
+            // base58 encode the unique _id of that document and construct the short URL
+            shortUrl = process.env.MONGODB_WEBHOST + base58.encode(doc._id);
+
+            // since the document exists, we return it without creating a new entry
+            res.send({'shortUrl': shortUrl});
           } else {
-            
-            
-            Url.findOne({long_url: longUrl}, function (err, doc){
-              if (doc){
-                // URL has already been shortened
-              } else {
-                // The long URL was not found in the long_url field in our urls
-                // collection, so we need to create a new entry
-              }
+            // The long URL was not found in the long_url field in our urls
+            // collection, so we need to create a new entry:
+            var newUrl = Url({
+              long_url: longUrl
             });
 
-            
-            res.send('looks good to me')
-            
-            //Close connection
-            db.close();
+            // save the new link
+            newUrl.save(function(err) {
+              if (err){
+                console.log(err);
+              }
+
+              // construct the short URL
+              shortUrl = process.env.MONGODB_WEBHOST + base58.encode(newUrl._id);
+
+              res.send({'shortUrl': shortUrl});
+            });
           }
-        })
+
+        });
+          
+        
        
       } else {
         res.send('you call that a valid url?')

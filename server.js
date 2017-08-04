@@ -44,6 +44,13 @@ app.route('/')
 		  res.sendFile(process.cwd() + '/views/index.html');
     })
 
+
+  /* app.route('/encode/:value')
+     .get(function(req, res) {
+      res.send(base58.encode(req.params.value));
+    })
+    */
+
 app.route('/new/*')
     .get(function(req, res) {
   
@@ -60,8 +67,6 @@ app.route('/new/*')
             // base58 encode the unique _id of that document and construct the short URL
             shortUrl = 'https://fluttering-acoustic.glitch.me/' + base58.encode(doc._id);
 
-            // since the document exists, we return it without creating a new entry
-            res.send({'shortUrl': shortUrl});
           } else {
             // The long URL was not found in the long_url field in our urls
             // collection, so we need to create a new entry:
@@ -78,9 +83,12 @@ app.route('/new/*')
               // construct the short URL
               shortUrl = 'https://fluttering-acoustic.glitch.me/' + base58.encode(newUrl._id);
 
-              res.send({'shortUrl': shortUrl});
             });
-          }
+          }          
+          
+          var myObj = {'original_url': longUrl,
+                       'short_url': shortUrl };
+          res.json(myObj)
 
         });
           
